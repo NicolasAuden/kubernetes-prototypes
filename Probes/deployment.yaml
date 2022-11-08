@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-frontend
+  labels:
+    env: dev
+spec:
+  selector:
+    matchLabels:
+      env: dev
+      app: example-app
+  template:
+    metadata:
+      labels:
+        env: dev
+        app: example-app
+    spec:
+      containers:
+        - name: example-app
+          image: nginx:1.19
+          resources:
+            requests:
+              cpu: 50m
+              memory: 200Mi
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+
+          startupProbe:
+            httpGet:
+              path: /api
+              port: 8080
+            failureThreshold: 30
+            periodSeconds: 2
+          readinessProbe:
+            httpGet:
+              path: /management/health/readiness
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /management/health/liveness
+              port: 8080
+            initialDelaySeconds: 20
